@@ -12,7 +12,7 @@ cache-control-headers = false
 compression = true
 
 #### Logging
-log-level = "trace"
+log-level = "info"
 
 #### Security headers
 security-headers = true
