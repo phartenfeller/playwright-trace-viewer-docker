@@ -13,4 +13,6 @@ COPY ./assets/pw-trace-config.toml /cfg/pw-trace-config.toml
 
 ENV SERVER_CONFIG_FILE=/cfg/pw-trace-config.toml
 
+LABEL org.opencontainers.image.source https://github.com/phartenfeller/playwright-trace-viewer-docker
+
 EXPOSE 8080

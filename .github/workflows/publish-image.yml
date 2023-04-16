@@ -20,9 +20,6 @@ jobs:
   # Push image to GitHub Packages.
   # See also https://docs.github.com/en/actions/guides/publishing-docker-images
   push:
-    # Ensure test job passes before pushing image.
-    needs: test
-
     runs-on: ubuntu-20.04
     if: github.event_name == 'push'
 
