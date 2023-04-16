@@ -1,0 +1,59 @@
+name: Publish Docker Image
+
+on:
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  IMAGE_NAME: playwright-trace-viewer-docker
+
+jobs:
+  # Push image to GitHub Packages.
+  # See also https://docs.github.com/en/actions/guides/publishing-docker-images
+  push:
+    # Ensure test job passes before pushing image.
+    needs: test
+
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Build Image
+        run: docker build . --file Dockerfile -t $IMAGE_NAME --cache-from ghcr.io/phartenfeller/$IMAGE_NAME
+
+      - name: Push image to GitHub Container Registry
+        run: |
+          IMAGE_ID=ghcr.io/phartenfeller/$IMAGE_NAME
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
