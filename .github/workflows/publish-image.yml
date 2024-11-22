@@ -4,6 +4,7 @@ on:
     branches:
       - main
     tags:
+      - "*" # Match all tags
   pull_request:
 
 env:
